@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ReproShot - capture, annotate and report web bugs</title>
+  <meta name="description" content="Capture a web page, mark it up, and copy a bug report with the browser, OS, URL and viewport already filled in. A local-first Chrome extension." />
+  <style>
+    :root { color-scheme: light dark; --bg:#0f1115; --card:#181b21; --ink:#e8eaed; --mut:#9aa3af; --accent:#4f7cff; --dot:#ff2d55; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+    .wrap { max-width:860px; margin:0 auto; padding:0 20px; }
+    header { padding:70px 0 40px; text-align:center; }
+    .logo { width:72px; height:72px; border-radius:18px; background:linear-gradient(160deg,#4f7cff,#2f4aaa); display:inline-flex; align-items:center; justify-content:center; position:relative; margin-bottom:22px; }
+    .logo .d { width:18px; height:18px; border-radius:50%; background:var(--dot); }
+    .logo .b { position:absolute; inset:16px; border:3px solid #fff; border-radius:4px; clip-path:polygon(0 0,28% 0,28% 8%,8% 8%,8% 28%,0 28%,0 0,100% 0,100% 28%,92% 28%,92% 8%,72% 8%,72% 0,100% 0,100% 100%,72% 100%,72% 92%,92% 92%,92% 72%,100% 72%,100% 100%,0 100%,0 72%,8% 72%,8% 92%,28% 92%,28% 100%,0 100%); }
+    h1 { font-size:40px; margin:0 0 12px; letter-spacing:-.5px; }
+    .tag { font-size:19px; color:var(--mut); max-width:620px; margin:0 auto 26px; }
+    .cta { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; font-weight:600; padding:13px 26px; border-radius:10px; }
+    .cta.ghost { background:transparent; border:1px solid #333a45; color:var(--ink); margin-left:10px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin:50px 0; }
+    .card { background:var(--card); border:1px solid #242933; border-radius:14px; padding:20px; }
+    .card h3 { margin:0 0 7px; font-size:16px; }
+    .card p { margin:0; color:var(--mut); font-size:14.5px; }
+    .price { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin:14px 0 50px; }
+    .tier { background:var(--card); border:1px solid #242933; border-radius:14px; padding:22px 26px; min-width:210px; text-align:center; }
+    .tier .n { font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--mut); }
+    .tier .p { font-size:30px; font-weight:700; margin:6px 0; }
+    .tier.pro { border-color:var(--accent); }
+    footer { border-top:1px solid #242933; padding:30px 0 50px; color:var(--mut); font-size:13.5px; text-align:center; }
+    footer a { color:var(--accent); }
+    .note { text-align:center; color:var(--mut); font-size:13px; margin-top:-30px; margin-bottom:40px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo"><span class="b"></span><span class="d"></span></div>
+      <h1>ReproShot</h1>
+      <p class="tag">Capture a page, mark it up, and copy a bug report with the browser, OS, URL and viewport already filled in. It all runs in your browser.</p>
+      <a class="cta" href="#get">Get ReproShot</a>
+      <a class="cta ghost" href="privacy.html">Privacy</a>
+    </header>
+
+    <div class="grid">
+      <div class="card"><h3>One-click capture</h3><p>Grab the visible area, or stitch the full scrolling page in one shot.</p></div>
+      <div class="card"><h3>Annotate fast</h3><p>Boxes, arrows, and text labels to point straight at the problem.</p></div>
+      <div class="card"><h3>Redact before you share</h3><p>Blur out tokens, emails, and customer data so nothing leaks into a ticket.</p></div>
+      <div class="card"><h3>Environment, filled in</h3><p>URL, browser and version, OS, viewport, screen, and timestamp, written for you.</p></div>
+      <div class="card"><h3>Paste anywhere</h3><p>Copy a clean Markdown report, or one formatted for Jira and Linear.</p></div>
+      <div class="card"><h3>Private by design</h3><p>No account, no cloud, no tracking. Your screenshots never leave your machine.</p></div>
+    </div>
+
+    <h2 style="text-align:center;margin-bottom:6px">Pricing</h2>
+    <p class="note">For the person filing the bug, not a per-seat team plan.</p>
+    <div class="price">
+      <div class="tier"><div class="n">Free</div><div class="p">$0</div><div>Visible capture, annotate, PNG export</div></div>
+      <div class="tier pro"><div class="n">Pro monthly</div><div class="p">$4.99</div><div>Full page, redaction, bug-report export</div></div>
+      <div class="tier pro"><div class="n">Pro lifetime</div><div class="p">$39</div><div>Pro, paid once</div></div>
+    </div>
+
+    <p id="get" style="text-align:center;font-size:15px;color:var(--mut)">ReproShot is headed to the Chrome Web Store. The listing link lands here when it is live.</p>
+
+    <footer>
+      ReproShot by <a href="https://greyridgesignals.ai">Grey Ridge Signals Group LLC</a>.
+      <a href="https://github.com/rezearcher/reproshot">Source</a> &middot;
+      <a href="privacy.html">Privacy</a> &middot;
+      <a href="mailto:contact@greyridgesignals.ai">Contact</a>
+    </footer>
+  </div>
+</body>
+</html>

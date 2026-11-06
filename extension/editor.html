@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ReproShot editor</title>
+  <link rel="stylesheet" href="editor.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">ReproShot</div>
+    <div class="tools" id="tools">
+      <button data-tool="select" class="tool active" title="Move / select">&#9995;</button>
+      <button data-tool="rect" class="tool" title="Box">&#9633;</button>
+      <button data-tool="arrow" class="tool" title="Arrow">&#8599;</button>
+      <button data-tool="text" class="tool" title="Text">T</button>
+      <button data-tool="blur" class="tool pro-tool" title="Redact / blur (Pro)">&#9680;</button>
+      <span class="sep"></span>
+      <input type="color" id="color" value="#ff2d55" title="Color" />
+      <button id="undo" class="tool" title="Undo">&#8630;</button>
+      <button id="clear" class="tool" title="Clear all">&#10005;</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="license" id="license">Free</div>
+  </header>
+
+  <main>
+    <div class="stage" id="stage">
+      <canvas id="canvas"></canvas>
+    </div>
+    <aside class="panel">
+      <label class="fld">Title
+        <input type="text" id="title" placeholder="Short summary of the bug" />
+      </label>
+      <label class="fld">Notes / steps to reproduce
+        <textarea id="notes" rows="5" placeholder="1. Go to ...&#10;2. Click ...&#10;3. Expected vs actual"></textarea>
+      </label>
+      <div class="env" id="env"></div>
+
+      <div class="exports">
+        <button id="dl" class="exp primary">Download PNG</button>
+        <button id="copyimg" class="exp">Copy image</button>
+        <button id="copymd" class="exp pro-exp">Copy bug report (Pro)</button>
+        <button id="copyjira" class="exp pro-exp">Copy for Jira / Linear (Pro)</button>
+      </div>
+      <p class="privacy">Everything stays on this device. ReproShot never uploads your screenshots.</p>
+      <div class="upsell" id="upsell" style="display:none">
+        <p><b>Unlock Pro</b> for full-page capture, redaction, and one-click bug reports.</p>
+        <button id="upgrade" class="exp primary">Upgrade</button>
+      </div>
+    </aside>
+  </main>
+  <div id="toast" class="toast"></div>
+  <script src="editor.js"></script>
+</body>
+</html>

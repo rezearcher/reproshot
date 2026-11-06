@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      width: 280px; margin: 0; padding: 14px;
+      font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #fff; color: #1a1d21;
+    }
+    @media (prefers-color-scheme: dark) { body { background: #1a1d21; color: #e8eaed; } }
+    h1 { font-size: 14px; margin: 0 0 2px; letter-spacing: .2px; }
+    .sub { font-size: 11px; opacity: .6; margin: 0 0 12px; }
+    button.cap {
+      display: flex; align-items: center; gap: 9px; width: 100%;
+      padding: 10px 12px; margin-bottom: 8px; border: 1px solid #c9ced6;
+      border-radius: 8px; background: #f6f7f9; color: inherit;
+      font-size: 13px; font-weight: 600; cursor: pointer; text-align: left;
+    }
+    @media (prefers-color-scheme: dark) { button.cap { background: #2a2e34; border-color: #3a3f47; } }
+    button.cap:hover { border-color: #4f7cff; }
+    .ico { font-size: 16px; }
+    .foot { display: flex; justify-content: space-between; align-items: center;
+      margin-top: 10px; padding-top: 10px; border-top: 1px solid #e3e6ea; font-size: 11px; }
+    @media (prefers-color-scheme: dark) { .foot { border-color: #3a3f47; } }
+    .badge { font-weight: 700; }
+    .pro { color: #1a9d5a; }
+    .free { opacity: .6; }
+    a { color: #4f7cff; text-decoration: none; cursor: pointer; }
+    #err { color: #d23; font-size: 11px; margin-top: 8px; display: none; }
+  </style>
+</head>
+<body>
+  <h1>ReproShot</h1>
+  <p class="sub">Capture, annotate, ship a bug report.</p>
+  <button class="cap" id="visible"><span class="ico">&#9635;</span> Capture visible area</button>
+  <button class="cap" id="fullpage"><span class="ico">&#8661;</span> Capture full page</button>
+  <div id="err"></div>
+  <div class="foot">
+    <span id="status" class="badge free">Free</span>
+    <a id="upgrade">Upgrade to Pro</a>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

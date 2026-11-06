@@ -1,0 +1,13 @@
+{
+  "name": "reproshot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ReproShot - capture a page, annotate it, and copy a ready-to-paste bug report. Chrome extension (Manifest V3).",
+  "scripts": {
+    "icons": "python3 -I scripts/gen_icons.py",
+    "build": "bash scripts/build.sh",
+    "lint": "eslint extension/*.js"
+  },
+  "license": "UNLICENSED"
+}

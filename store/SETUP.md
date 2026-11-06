@@ -23,10 +23,10 @@ Rez-only because they need an identity and a payout method.
 2. Click **Add new item** and upload `dist/reproshot-v1.0.0.zip`.
 3. Fill the listing from `store/LISTING.md` (name, summary, description,
    category = Developer Tools, screenshots).
-4. Privacy: host `store/PRIVACY.md` as a public page (the GitHub Pages URL for
-   this repo works) and paste the URL into the **Privacy policy** field.
-   Add the single-purpose description and the permission justifications from
-   `store/LISTING.md`.
+4. Privacy: the policy is already hosted at
+   **https://rezearcher.github.io/reproshot/privacy.html** (GitHub Pages).
+   Paste that URL into the **Privacy policy** field. Add the single-purpose
+   description and the permission justifications from `store/LISTING.md`.
 5. Submit for review. Chrome review is typically a few business days.
 
 ## After it is live

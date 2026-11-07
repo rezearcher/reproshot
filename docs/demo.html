@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Try ReproShot - annotate a screenshot and copy a filled-in bug report</title>
+  <meta name="description" content="Drop in a screenshot, mark it up with boxes, arrows, text and redaction, and copy a bug report with the browser, OS and viewport already filled in. Runs entirely in your browser. No install, no upload." />
+  <link rel="canonical" href="https://rezearcher.github.io/reproshot/demo.html" />
+  <style>
+    :root { color-scheme: light dark; --bg:#f4f5f7; --panel:#fff; --ink:#1a1d21; --line:#d8dce2; --accent:#4f7cff; --mut:#6b7280; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#15171a; --panel:#1f2227; --ink:#e8eaed; --line:#343941; --mut:#9aa3af; } }
+    * { box-sizing: border-box; }
+    body { margin:0; font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+    a { color:var(--accent); }
+    .topbar { display:flex; align-items:center; gap:10px; padding:10px 16px; background:var(--panel); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+    .brand { font-weight:700; letter-spacing:.3px; font-size:15px; }
+    .brand .dot { color:var(--accent); }
+    .topbar .grow { flex:1; }
+    .cta { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; font-weight:600; padding:8px 16px; border-radius:8px; font-size:12.5px; }
+    .cta.ghost { background:transparent; border:1px solid var(--line); color:var(--ink); }
+    .tools { display:flex; align-items:center; gap:4px; padding:8px 16px; background:var(--panel); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+    .tool { width:34px; height:34px; border:1px solid var(--line); background:transparent; color:inherit; border-radius:7px; font-size:15px; cursor:pointer; }
+    .tool.active, .tool:hover { border-color:var(--accent); }
+    .sep { width:1px; height:22px; background:var(--line); margin:0 4px; }
+    #color { width:34px; height:34px; padding:0; border:1px solid var(--line); border-radius:7px; background:transparent; cursor:pointer; }
+    .hint { font-size:11.5px; color:var(--mut); margin-left:6px; }
+    main { display:flex; min-height:calc(100vh - 150px); }
+    .stage { flex:1; overflow:auto; display:flex; justify-content:center; align-items:flex-start; padding:18px; position:relative; }
+    canvas { background:#fff; box-shadow:0 2px 14px rgba(0,0,0,.18); cursor:crosshair; max-width:100%; display:none; }
+    .drop { border:2px dashed var(--line); border-radius:14px; width:min(640px,100%); min-height:320px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:28px; cursor:pointer; color:var(--mut); }
+    .drop.drag { border-color:var(--accent); background:rgba(79,124,255,.06); }
+    .drop h2 { margin:0 0 6px; color:var(--ink); font-size:18px; }
+    .drop .pick { margin-top:14px; }
+    .panel { width:320px; flex:none; background:var(--panel); border-left:1px solid var(--line); padding:16px; overflow:auto; }
+    .fld { display:block; font-size:11px; font-weight:600; opacity:.8; margin-bottom:12px; }
+    .fld input, .fld textarea { width:100%; margin-top:5px; padding:8px; border:1px solid var(--line); border-radius:7px; background:var(--bg); color:inherit; font:inherit; resize:vertical; }
+    .env { font-size:11px; background:var(--bg); border:1px solid var(--line); border-radius:7px; padding:9px; margin-bottom:14px; }
+    .env .row { display:flex; justify-content:space-between; gap:8px; padding:2px 0; }
+    .env .k { opacity:.55; }
+    .env .v { font-weight:600; text-align:right; word-break:break-all; }
+    .exports { display:flex; flex-direction:column; gap:8px; }
+    .exp { padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:inherit; font-weight:600; cursor:pointer; text-align:left; }
+    .exp.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .exp:hover { filter:brightness(1.03); border-color:var(--accent); }
+    .exp:disabled { opacity:.45; cursor:not-allowed; }
+    .privacy { font-size:10.5px; opacity:.6; margin:12px 0 0; }
+    .installbox { margin-top:16px; padding:13px; border:1px solid var(--accent); border-radius:10px; background:rgba(79,124,255,.06); }
+    .installbox p { margin:0 0 9px; font-size:12px; }
+    .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1d21; color:#fff; padding:9px 16px; border-radius:8px; font-size:12px; opacity:0; transition:opacity .2s; pointer-events:none; z-index:20; }
+    .toast.show { opacity:1; }
+    footer { text-align:center; padding:18px; font-size:11.5px; color:var(--mut); border-top:1px solid var(--line); }
+    .report-out { margin-top:12px; }
+    .report-out textarea { width:100%; height:150px; font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; padding:8px; border:1px solid var(--line); border-radius:7px; background:var(--bg); color:inherit; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">Repro<span class="dot">Shot</span> &middot; live demo</div>
+    <span class="hint">Everything runs in your browser. Nothing is uploaded.</span>
+    <span class="grow"></span>
+    <a class="cta ghost" href="index.html">About</a>
+    <a class="cta" id="installCta" href="index.html#get">Get the extension</a>
+  </div>
+
+  <div class="tools" id="tools">
+    <button data-tool="select" class="tool active" title="Move / select">&#9995;</button>
+    <button data-tool="rect" class="tool" title="Box">&#9633;</button>
+    <button data-tool="arrow" class="tool" title="Arrow">&#8599;</button>
+    <button data-tool="text" class="tool" title="Text label">T</button>
+    <button data-tool="blur" class="tool" title="Redact / blur">&#9680;</button>
+    <span class="sep"></span>
+    <input type="color" id="color" value="#ff2d55" title="Color" />
+    <button id="undo" class="tool" title="Undo">&#8630;</button>
+    <button id="clear" class="tool" title="Clear all">&#10005;</button>
+    <span class="hint" id="toolhint">Drop a screenshot to begin, then pick a tool and drag on the image.</span>
+  </div>
+
+  <main>
+    <div class="stage" id="stage">
+      <div class="drop" id="drop">
+        <h2>Drop a screenshot here</h2>
+        <div>or paste from your clipboard (Ctrl/Cmd+V), or</div>
+        <div class="pick"><label class="cta" for="file">Choose an image</label></div>
+        <input type="file" id="file" accept="image/*" hidden />
+      </div>
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <aside class="panel">
+      <label class="fld">Title
+        <input type="text" id="title" placeholder="Short summary of the bug" />
+      </label>
+      <label class="fld">URL where it happened
+        <input type="text" id="bugurl" placeholder="https://app.example.com/orders" />
+      </label>
+      <label class="fld">Notes / steps to reproduce
+        <textarea id="notes" rows="5" placeholder="1. Go to ...&#10;2. Click ...&#10;3. Expected vs actual"></textarea>
+      </label>
+      <div class="env" id="env"></div>
+
+      <div class="exports">
+        <button id="dl" class="exp primary" disabled>Download PNG</button>
+        <button id="copyimg" class="exp" disabled>Copy image</button>
+        <button id="copymd" class="exp" disabled>Copy bug report (Markdown)</button>
+        <button id="copyjira" class="exp" disabled>Copy for Jira / Linear</button>
+      </div>
+      <div class="report-out" id="reportOut" style="display:none">
+        <textarea id="reportText" readonly></textarea>
+      </div>
+      <p class="privacy">Local-only demo. Your image and notes never leave this page.</p>
+
+      <div class="installbox">
+        <p><b>The extension captures for you.</b> ReproShot for Chrome grabs the visible area or stitches the whole scrolling page in one click, and fills the environment in from the real tab, no upload step.</p>
+        <a class="cta" href="index.html#get">Get ReproShot &rarr;</a>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    ReproShot by <a href="https://greyridgesignals.ai">Grey Ridge Signals Group LLC</a>.
+    <a href="https://github.com/rezearcher/reproshot">Source</a> &middot;
+    <a href="privacy.html">Privacy</a> &middot;
+    <a href="mailto:contact@greyridgesignals.ai">Contact</a>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+  (function () {
+    'use strict';
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var drop = document.getElementById('drop');
+    var state = { img: null, base: null, scale: 1, tool: 'select', color: '#ff2d55', shapes: [], drag: null, env: null };
+
+    function toast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(function () { t.classList.remove('show'); }, 1700);
+    }
+
+    // ---- environment, read from the visitor's real browser ----
+    function parseBrowser(ua) {
+      var m = { Edge:/Edg\/([\d.]+)/, Opera:/OPR\/([\d.]+)/, Chrome:/Chrome\/([\d.]+)/, Firefox:/Firefox\/([\d.]+)/, Safari:/Version\/([\d.]+).*Safari/ };
+      for (var name in m) { var r = ua.match(m[name]); if (r) return name + ' ' + r[1].split('.').slice(0,2).join('.'); }
+      return 'Unknown';
+    }
+    function parseOS(ua) {
+      if (/Windows NT 10/.test(ua)) return 'Windows 10/11';
+      if (/Windows NT/.test(ua)) return 'Windows';
+      if (/Mac OS X ([\d_]+)/.test(ua)) return 'macOS ' + ua.match(/Mac OS X ([\d_]+)/)[1].replace(/_/g,'.');
+      if (/Android ([\d.]+)/.test(ua)) return 'Android ' + ua.match(/Android ([\d.]+)/)[1];
+      if (/(iPhone|iPad); CPU.*OS ([\d_]+)/.test(ua)) return 'iOS ' + ua.match(/OS ([\d_]+)/)[1].replace(/_/g,'.');
+      if (/Linux/.test(ua)) return 'Linux';
+      return 'Unknown';
+    }
+    function readEnv() {
+      var ua = navigator.userAgent;
+      return {
+        browser: parseBrowser(ua), os: parseOS(ua),
+        viewport: window.innerWidth + ' x ' + window.innerHeight,
+        screen: (screen.width + ' x ' + screen.height) + ' @' + (window.devicePixelRatio || 1) + 'x',
+        language: navigator.language, capturedAt: new Date().toISOString(), userAgent: ua
+      };
+    }
+    function envRows() {
+      var en = state.env || {};
+      var url = document.getElementById('bugurl').value.trim();
+      var rows = [['URL', url], ['Browser', en.browser], ['OS', en.os], ['Viewport', en.viewport],
+                  ['Screen', en.screen], ['Language', en.language], ['Captured', en.capturedAt]];
+      return rows.filter(function (r) { return r[1]; });
+    }
+    function renderEnv() {
+      var host = document.getElementById('env'); host.innerHTML = '';
+      var rows = envRows();
+      if (!rows.length) { host.textContent = 'Environment is read from your browser once you add an image.'; return; }
+      rows.forEach(function (r) {
+        var row = document.createElement('div'); row.className = 'row';
+        var k = document.createElement('span'); k.className = 'k'; k.textContent = r[0];
+        var v = document.createElement('span'); v.className = 'v'; v.textContent = r[1];
+        row.appendChild(k); row.appendChild(v); host.appendChild(row);
+      });
+    }
+
+    // ---- image load ----
+    function fitScale(w) { var avail = Math.max(300, window.innerWidth - 320 - 80); return Math.min(1, avail / w); }
+    function resizeCanvas() {
+      state.scale = fitScale(state.img.naturalWidth);
+      canvas.width = state.img.naturalWidth; canvas.height = state.img.naturalHeight;
+      canvas.style.width = Math.round(state.img.naturalWidth * state.scale) + 'px';
+      canvas.style.height = Math.round(state.img.naturalHeight * state.scale) + 'px';
+      render();
+    }
+    function loadImage(src) {
+      var im = new Image();
+      im.onload = function () {
+        state.img = im;
+        // stable base copy for blur sampling
+        var b = document.createElement('canvas'); b.width = im.naturalWidth; b.height = im.naturalHeight;
+        b.getContext('2d').drawImage(im, 0, 0); state.base = b;
+        drop.style.display = 'none'; canvas.style.display = 'block';
+        state.env = readEnv(); renderEnv();
+        ['dl','copyimg','copymd','copyjira'].forEach(function (id) { document.getElementById(id).disabled = false; });
+        document.getElementById('toolhint').textContent = 'Pick a tool, then drag on the image. Text asks for a label.';
+        resizeCanvas();
+      };
+      im.onerror = function () { toast('That file could not be read as an image.'); };
+      im.src = src;
+    }
+    function handleFile(file) {
+      if (!file || !/^image\//.test(file.type)) { toast('Please choose an image file.'); return; }
+      var r = new FileReader(); r.onload = function () { loadImage(r.result); }; r.readAsDataURL(file);
+    }
+
+    document.getElementById('file').addEventListener('change', function (e) { if (e.target.files[0]) handleFile(e.target.files[0]); });
+    drop.addEventListener('click', function (e) { if (e.target.tagName !== 'LABEL') document.getElementById('file').click(); });
+    ['dragenter','dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('drag'); }); });
+    ['dragleave','drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('drag'); }); });
+    drop.addEventListener('drop', function (e) { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+    window.addEventListener('paste', function (e) {
+      var items = (e.clipboardData && e.clipboardData.items) || [];
+      for (var i = 0; i < items.length; i++) { if (items[i].type.indexOf('image') === 0) { handleFile(items[i].getAsFile()); return; } }
+    });
+
+    // ---- drawing ----
+    function pixelate(c, x, y, w, h) {
+      w = Math.max(1, Math.round(w)); h = Math.max(1, Math.round(h)); x = Math.round(x); y = Math.round(y);
+      var sample = Math.max(4, Math.round(Math.min(w, h) / 10));
+      var tw = Math.max(1, Math.round(w / sample)), th = Math.max(1, Math.round(h / sample));
+      var tmp = document.createElement('canvas'); tmp.width = tw; tmp.height = th;
+      tmp.getContext('2d').drawImage(state.base, x, y, w, h, 0, 0, tw, th);
+      c.imageSmoothingEnabled = false; c.drawImage(tmp, 0, 0, tw, th, x, y, w, h); c.imageSmoothingEnabled = true;
+    }
+    function drawArrow(c, x1, y1, x2, y2) {
+      var head = Math.max(10, state.img.naturalWidth / 90), ang = Math.atan2(y2 - y1, x2 - x1);
+      c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+      c.beginPath(); c.moveTo(x2, y2);
+      c.lineTo(x2 - head * Math.cos(ang - Math.PI/6), y2 - head * Math.sin(ang - Math.PI/6));
+      c.lineTo(x2 - head * Math.cos(ang + Math.PI/6), y2 - head * Math.sin(ang + Math.PI/6));
+      c.closePath(); c.fill();
+    }
+    function drawShape(c, s) {
+      c.lineWidth = Math.max(2, Math.round(state.img.naturalWidth / 400));
+      c.strokeStyle = s.color; c.fillStyle = s.color;
+      if (s.type === 'rect') { c.strokeRect(s.x, s.y, s.w, s.h); }
+      else if (s.type === 'arrow') { drawArrow(c, s.x1, s.y1, s.x2, s.y2); }
+      else if (s.type === 'text') {
+        var fs = Math.max(16, Math.round(state.img.naturalWidth / 45));
+        c.font = '700 ' + fs + 'px -apple-system, Segoe UI, Roboto, sans-serif'; c.textBaseline = 'top';
+        var pad = fs * 0.3, w = c.measureText(s.text).width;
+        c.save(); c.fillStyle = 'rgba(0,0,0,.72)'; c.fillRect(s.x - pad, s.y - pad, w + pad*2, fs + pad*2);
+        c.fillStyle = s.color; c.fillText(s.text, s.x, s.y); c.restore();
+      } else if (s.type === 'blur') { pixelate(c, s.x, s.y, s.w, s.h); }
+    }
+    function render(preview) {
+      if (!state.img) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(state.img, 0, 0);
+      state.shapes.forEach(function (s) { drawShape(ctx, s); });
+      if (preview) drawShape(ctx, preview);
+    }
+    function evtToNatural(e) {
+      var r = canvas.getBoundingClientRect();
+      return { x: (e.clientX - r.left) / state.scale, y: (e.clientY - r.top) / state.scale };
+    }
+    function previewShape() {
+      if (!state.drag) return null;
+      var d = state.drag;
+      if (state.tool === 'rect') return { type:'rect', x:Math.min(d.startX,d.x), y:Math.min(d.startY,d.y), w:Math.abs(d.x-d.startX), h:Math.abs(d.y-d.startY), color:state.color };
+      if (state.tool === 'blur') return { type:'blur', x:Math.min(d.startX,d.x), y:Math.min(d.startY,d.y), w:Math.abs(d.x-d.startX), h:Math.abs(d.y-d.startY) };
+      if (state.tool === 'arrow') return { type:'arrow', x1:d.startX, y1:d.startY, x2:d.x, y2:d.y, color:state.color };
+      return null;
+    }
+    canvas.addEventListener('mousedown', function (e) {
+      if (state.tool === 'select') return;
+      var p = evtToNatural(e);
+      if (state.tool === 'text') {
+        var text = window.prompt('Label text');
+        if (text) { state.shapes.push({ type:'text', x:p.x, y:p.y, text:text, color:state.color }); render(); }
+        return;
+      }
+      state.drag = { startX:p.x, startY:p.y, x:p.x, y:p.y };
+    });
+    canvas.addEventListener('mousemove', function (e) {
+      if (!state.drag) return; var p = evtToNatural(e); state.drag.x = p.x; state.drag.y = p.y; render(previewShape());
+    });
+    window.addEventListener('mouseup', function () {
+      if (!state.drag) return;
+      var s = previewShape();
+      var big = (Math.abs(state.drag.x - state.drag.startX) + Math.abs(state.drag.y - state.drag.startY)) > 6;
+      if (s && big) state.shapes.push(s);
+      state.drag = null; render();
+    });
+
+    document.getElementById('tools').addEventListener('click', function (e) {
+      var b = e.target.closest('button.tool'); if (!b || !b.dataset.tool) return;
+      state.tool = b.dataset.tool;
+      Array.prototype.forEach.call(document.querySelectorAll('.tool'), function (t) { t.classList.remove('active'); });
+      b.classList.add('active');
+      canvas.style.cursor = state.tool === 'select' ? 'default' : 'crosshair';
+    });
+    document.getElementById('color').addEventListener('input', function (e) { state.color = e.target.value; });
+    document.getElementById('undo').addEventListener('click', function () { state.shapes.pop(); render(); });
+    document.getElementById('clear').addEventListener('click', function () { state.shapes = []; render(); });
+    document.getElementById('bugurl').addEventListener('input', renderEnv);
+
+    // ---- export ----
+    function flatten() {
+      var out = document.createElement('canvas'); out.width = canvas.width; out.height = canvas.height;
+      var octx = out.getContext('2d'); octx.drawImage(state.img, 0, 0);
+      state.shapes.forEach(function (s) { drawShape(octx, s); });
+      return out;
+    }
+    function flattenedBlob() { return new Promise(function (res) { flatten().toBlob(function (b) { res(b); }, 'image/png'); }); }
+    document.getElementById('dl').addEventListener('click', function () {
+      flatten().toBlob(function (blob) {
+        var url = URL.createObjectURL(blob), a = document.createElement('a');
+        var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.href = url; a.download = 'reproshot-' + stamp + '.png'; a.click();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000); toast('PNG downloaded');
+      }, 'image/png');
+    });
+    document.getElementById('copyimg').addEventListener('click', function () {
+      flattenedBlob().then(function (blob) {
+        if (!navigator.clipboard || !window.ClipboardItem) { toast('Image copy not supported here; use Download'); return; }
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+          .then(function () { toast('Image copied to clipboard'); })
+          .catch(function () { toast('Copy blocked by the browser; use Download'); });
+      });
+    });
+    function buildMarkdown(forJira) {
+      var title = document.getElementById('title').value.trim() || 'Bug report';
+      var notes = document.getElementById('notes').value.trim();
+      var rows = envRows(), md = '';
+      if (forJira) {
+        md += 'h2. ' + title + '\n\n'; if (notes) md += notes + '\n\n';
+        md += '*Environment*\n||Field||Value||\n';
+        rows.forEach(function (r) { md += '|' + r[0] + '|' + r[1] + '|\n'; });
+        md += '\n_Screenshot: paste the copied image here._\n';
+      } else {
+        md += '## ' + title + '\n\n'; if (notes) md += notes + '\n\n';
+        md += '**Environment**\n\n| Field | Value |\n| --- | --- |\n';
+        rows.forEach(function (r) { md += '| ' + r[0] + ' | ' + r[1] + ' |\n'; });
+        md += '\n_Screenshot: paste the copied image here._\n';
+      }
+      return md;
+    }
+    function copyReport(forJira) {
+      var text = buildMarkdown(forJira);
+      var out = document.getElementById('reportOut'), ta = document.getElementById('reportText');
+      out.style.display = 'block'; ta.value = text;
+      var done = function () { toast(forJira ? 'Jira / Linear report copied' : 'Bug report copied'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () { ta.select(); toast('Select-all + copy the text below'); });
+      } else { ta.select(); try { document.execCommand('copy'); done(); } catch (e) { toast('Select-all + copy the text below'); } }
+    }
+    document.getElementById('copymd').addEventListener('click', function () { copyReport(false); });
+    document.getElementById('copyjira').addEventListener('click', function () { copyReport(true); });
+
+    window.addEventListener('resize', function () { if (state.img) resizeCanvas(); });
+    renderEnv();
+  })();
+  </script>
+</body>
+</html>

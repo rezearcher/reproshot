@@ -6,6 +6,10 @@ runs entirely in the browser. No account, no cloud, no tracking on the free tier
 
 Built by Grey Ridge Signals Group LLC.
 
+**Try it with no install:** https://rezearcher.github.io/reproshot/demo.html — the
+annotate + bug-report editor runs standalone in your browser. The extension adds
+one-click visible and full-page capture so you skip the upload step.
+
 ## Why
 
 A useful bug report needs a screenshot, some arrows pointing at the problem, and

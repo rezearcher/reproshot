@@ -12,11 +12,19 @@ Developer Tools
 ## Language
 English
 
+## Website / support URL
+https://rezearcher.github.io/reproshot/
+
+## Try before you install (link in description + first screenshot caption)
+https://rezearcher.github.io/reproshot/demo.html — the full annotate + bug-report editor runs in the browser with no install, so reviewers and buyers can confirm the value before adding the extension.
+
 ## Full description
 
 Filing a good bug report takes three annoying steps: take the screenshot, draw on it, and then type out "Chrome 141, macOS, 1440x900, here is the URL." ReproShot does the last two for you.
 
 Click the toolbar button and ReproShot grabs the page. The editor opens with arrow, box, and text tools so you can point at the problem. Press one button and it copies a clean report with the environment table already written, ready to paste into Jira, Linear, GitHub, a Slack message, or an email.
+
+Want to see it first? Try the editor in your browser, no install: https://rezearcher.github.io/reproshot/demo.html
 
 WHAT YOU GET
 

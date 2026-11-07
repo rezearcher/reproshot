@@ -4,6 +4,12 @@ The extension is built and packaged (`dist/reproshot-v1.0.0.zip`). Everything th
 can be done without an account is done. Two one-time accounts turn it on. Both are
 Rez-only because they need an identity and a payout method.
 
+Live now (no account needed): the tryable editor at
+**https://rezearcher.github.io/reproshot/demo.html** and the landing at
+**https://rezearcher.github.io/reproshot/** . These let anyone use the core
+annotate + bug-report flow in-browser today; publishing the extension below adds
+one-click capture and turns on paid Pro.
+
 ## 1. ExtensionPay product (unlocks Pro billing) - ~5 min
 
 1. Go to https://extensionpay.com and sign up (free; Grey Ridge).
